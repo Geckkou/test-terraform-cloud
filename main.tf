@@ -1,25 +1,8 @@
 provider "aws" {
-  region  = "us-east-1"
-  # profile = "vertigo-devops"
-  # shared_credentials_files = [ "/Users/alexandreasr/.aws/credentials" ]
+  region = "us-east-1"
   default_tags {
     tags = local.common_tags
   }
-}
-
-#Retrieve the list of AZs in the current AWS region
-data "aws_availability_zones" "available" {}
-data "aws_region" "current" {}
-#Terraform Data Block - Lookup Ubuntu 22.04
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
-  }
-
-  owners = ["099720109477"]
 }
 
 #Define the VPC 
@@ -89,7 +72,6 @@ resource "aws_internet_gateway" "internet_gateway" {
 }
 
 # Security Groups
-
 resource "aws_security_group" "ingress-ssh" {
   name   = "allow-all-ssh"
   vpc_id = aws_vpc.vpc.id
@@ -162,9 +144,9 @@ resource "aws_security_group" "vpc-ping" {
 
 # Terraform Resource Block - To Build EC2 instance in Public Subnet
 resource "aws_instance" "web_server" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t3.micro"
-  subnet_id     = aws_subnet.public_subnets["public_subnet_1"].id
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t3.micro"
+  subnet_id                   = aws_subnet.public_subnets["public_subnet_1"].id
   security_groups             = [aws_security_group.vpc-ping.id, aws_security_group.ingress-ssh.id, aws_security_group.vpc-web.id]
   associate_public_ip_address = true
   key_name                    = aws_key_pair.generated.key_name
@@ -194,24 +176,6 @@ resource "aws_instance" "web_server" {
   }
 }
 
-resource "aws_iam_policy" "policy" {
-  name        = "data_bucket_policy"
-  description = "Allow access to my bucket"
-  policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
-      {
-        "Effect" : "Allow",
-        "Action" : [
-          "s3:Get*",
-          "s3:List*"
-        ],
-        "Resource" : "${data.aws_s3_bucket.data_bucket.arn}"
-      }
-    ]
-  })
-}
-
 resource "tls_private_key" "generated" {
   algorithm = "RSA"
 }
@@ -222,7 +186,7 @@ resource "aws_key_pair" "generated" {
 }
 
 resource "local_file" "private_key_pem" {
-  content       = tls_private_key.generated.private_key_pem
-  filename      = var.private_key_file
+  content         = tls_private_key.generated.private_key_pem
+  filename        = var.private_key_file
   file_permission = "0600"
 }

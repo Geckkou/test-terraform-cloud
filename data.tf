@@ -1,3 +1,14 @@
-data "aws_s3_bucket" "data_bucket" {
-  bucket = "falcon.sensor"
+data "aws_availability_zones" "available" {}
+
+data "aws_region" "current" {}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+
+  owners = ["099720109477"]
 }

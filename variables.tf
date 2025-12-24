@@ -91,7 +91,7 @@ variable "private_key_file" {
 }
 
 variable "environment" {
-  type = string
+  type        = string
   description = "Infrastructure environment. eg. dev, prod, etc"
-  default = "test"
+  default     = "test"
 }
